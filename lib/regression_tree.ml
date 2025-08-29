@@ -41,40 +41,55 @@ let thresholds (xs : float list) : float list =
   in
   build_thresholds [] uniquely_sorted_xs
 
-let split threshold pairs =
+let split (threshold : float) (pairs : (float * float) list) =
   let left_pairs, right_pairs =
     List.partition (fun (x, _) -> x <= threshold) pairs
   in
   (List.map snd left_pairs, List.map snd right_pairs)
 
-let calculate_gain_for_split left_ys right_ys =
-  let lc = float_of_int (List.length left_ys) in
-  let rc = float_of_int (List.length right_ys) in
-  let n = lc +. rc in
+let calculate_loss_for_split left_ys right_ys =
+  let n_left = float_of_int (List.length left_ys) in
+  let n_right = float_of_int (List.length right_ys) in
+  let n = n_left +. n_right in
   if n = 0.0 then infinity
-  else ((lc *. mse left_ys) +. (rc *. mse right_ys)) /. n
+  else ((n_left *. mse left_ys) +. (n_right *. mse right_ys)) /. n
 
-let find_best_split_of_feature xs ys =
-  let possible_thresholds = List.map thresholds xs in
+let find_best_split_of_feature (xs : float list) (ys : float list) =
+  let possible_thresholds = thresholds xs in
   if List.is_empty possible_thresholds then None
   else
-    let gains_by_split =
+    let loss_by_split =
       List.map
         (fun threshold ->
           let left_ys, right_ys = split threshold (List.combine xs ys) in
-          (threshold, calculate_gain_for_split left_ys right_ys))
+          (threshold, calculate_loss_for_split left_ys right_ys))
         possible_thresholds
     in
     let best =
       List.fold_left
-        (fun (t1, g1) (t2, g2) -> if g1 < g2 then (t1, g1) else (t2, g2))
-        (List.hd gains_by_split) (List.tl gains_by_split)
+        (fun (t1, l1) (t2, l2) -> if l1 < l2 then (t1, l1) else (t2, l2))
+        (List.hd loss_by_split) (List.tl loss_by_split)
     in
     Some best
 
-let find_best_split features ys =
+let find_best_split (features : float list list) (ys : float list) =
   let xs_by_feature = transpose features in
-  List.map find_best_split_of_feature xs_by_feature
+  let best_splits_by_feature =
+    List.map (fun xs -> find_best_split_of_feature xs ys) xs_by_feature
+  in
+  let best_splits_by_feature_and_index =
+    best_splits_by_feature
+    |> List.mapi (fun i opt ->
+           match opt with Some (t, l) -> Some (i, t, l) | None -> None)
+    |> List.filter_map (fun x -> x)
+  in
+  let best =
+    List.fold_left
+      (fun (i1, t1, l1) (i2, t2, l2) ->
+        if l1 < l2 then (i1, t1, l1) else (i2, t2, l2))
+      (-1, 0.0, infinity) best_splits_by_feature_and_index
+  in
+  Some best
 
 let rec fit ~(data : ('x, 'y) dataset) =
   if List.length data <= 1 then Leaf (mean (List.map snd data))
@@ -82,7 +97,14 @@ let rec fit ~(data : ('x, 'y) dataset) =
     let features, ys = List.split data in
     match find_best_split features ys with
     | None -> Leaf (mean ys)
-    | Some (best_threshold, best_feature) -> Leaf 1.0
+    | Some (best_feature, best_threshold, best_loss) ->
+        Node
+          {
+            feature_index = best_feature;
+            threshold = best_threshold;
+            left = Leaf 0.0;
+            right = Leaf 0.0;
+          }
 
 let () =
   let f a b = (a *. 4.0) +. (b *. 3.0) +. 1.0 in
