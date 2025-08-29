@@ -1,2 +1,8 @@
+# Dune
+_build
+*.install
+*.merlin
+_opam
+
 # macOS
 .DS_Store
