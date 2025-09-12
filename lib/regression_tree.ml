@@ -81,12 +81,12 @@ let find_best_split (features : float list list) (ys : float list) =
     best_splits_by_feature
     |> List.mapi (fun i opt ->
            match opt with Some (t, l) -> Some (i, t, l) | None -> None)
-    |> List.filter_map (fun x -> x)
+    |> List.filter_map Fun.id
   in
   let best =
     List.fold_left
       (fun (i1, t1, l1) (i2, t2, l2) ->
-        if l1 < l2 then (i1, t1, l1) else (i2, t2, l2))
+        if l2 < l1 then (i2, t2, l2) else (i1, t1, l1))
       (-1, 0.0, infinity) best_splits_by_feature_and_index
   in
   Some best
@@ -97,40 +97,17 @@ let rec fit ~(data : ('x, 'y) dataset) =
     let features, ys = List.split data in
     match find_best_split features ys with
     | None -> Leaf (mean ys)
-    | Some (best_feature, best_threshold, best_loss) ->
+    | Some (best_feature, best_threshold, _) ->
+        let left_data, right_data =
+          List.partition
+            (fun (x, _) -> List.nth x best_feature <= best_threshold)
+            data
+        in
         Node
           {
             feature_index = best_feature;
             threshold = best_threshold;
-            left = Leaf 0.0;
-            right = Leaf 0.0;
+            left = fit ~data:left_data;
+            right = fit ~data:right_data;
           }
 
-let () =
-  let f a b = (a *. 4.0) +. (b *. 3.0) +. 1.0 in
-  print_endline
-    (String.concat " "
-       (List.map
-          (fun m -> Printf.sprintf "%f" m)
-          (thresholds [ 2.0; 3.0; 4.0 ])))
-(* print_endline (Printf.sprintf "%f" (mean [])) *)
-(* print_endline
-    (match fit ~data:[ ([ (2.0, 3.0) ], f 2.0 3.0) ] with
-    | Leaf v -> Printf.sprintf "%f" v
-    | Node _ -> "Node") *)
-
-(* let () =
-  let f (a : float) (b : float) = (a *. 4.0) +. (b *. 3.0) +. 1.0 in
-  let data = [ ([ (2.0, 4.0) ], f 2.0 4.0); ([ (3.0, 5.0) ], f 3.0 5.0) ] in
-  let data_str : string =
-    data
-    |> List.map (fun (xs, y) ->
-           let xs_str =
-             xs
-             |> List.map (fun (a, b) -> Printf.sprintf "(%f, %f)" a b)
-             |> String.concat ", "
-           in
-           Printf.sprintf "(%s, %f)" xs_str y)
-    |> String.concat "; "
-  in
-  print_endline ("Data: [" ^ data_str ^ "]") *)
