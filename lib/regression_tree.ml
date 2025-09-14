@@ -91,25 +91,29 @@ let find_best_split (features : float list list) (ys : float list) =
   in
   Some best
 
-let rec fit ~(data : ('x, 'y) dataset) =
-  if List.length data <= 1 then Leaf (mean (List.map snd data))
-  else
-    let features, ys = List.split data in
-    match find_best_split features ys with
-    | None -> Leaf (mean ys)
-    | Some (best_feature, best_threshold, _) ->
-        let left_data, right_data =
-          List.partition
-            (fun (x, _) -> List.nth x best_feature <= best_threshold)
-            data
-        in
-        Node
-          {
-            feature_index = best_feature;
-            threshold = best_threshold;
-            left = fit ~data:left_data;
-            right = fit ~data:right_data;
-          }
+let fit ?(max_depth : int = max_int) (data : ('x, 'y) dataset) =
+  let rec aux max_depth data =
+    if List.length data <= 1 || max_depth <= 0 then
+      Leaf (mean (List.map snd data))
+    else
+      let features, ys = List.split data in
+      match find_best_split features ys with
+      | None -> Leaf (mean ys)
+      | Some (best_feature, best_threshold, _) ->
+          let left_data, right_data =
+            List.partition
+              (fun (x, _) -> List.nth x best_feature <= best_threshold)
+              data
+          in
+          Node
+            {
+              feature_index = best_feature;
+              threshold = best_threshold;
+              left = aux (max_depth - 1) left_data;
+              right = aux (max_depth - 1) right_data;
+            }
+  in
+  aux max_depth data
 
 let rec to_string ?(indent = 0) ?(level = 0) (tree : (float, float) t) =
   let spaces = if indent > 0 then String.make (level * indent) ' ' else "" in
