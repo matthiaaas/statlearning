@@ -111,3 +111,13 @@ let rec fit ~(data : ('x, 'y) dataset) =
             right = fit ~data:right_data;
           }
 
+let rec to_string ?(indent = 0) ?(level = 0) (tree : (float, float) t) =
+  let spaces = if indent > 0 then String.make (level * indent) ' ' else "" in
+  match tree with
+  | Leaf value -> Printf.sprintf "%sLeaf (%f)" spaces value
+  | Node { feature_index; threshold; left; right } ->
+      let next_level = level + 1 in
+      let left_str = to_string ~indent ~level:next_level left in
+      let right_str = to_string ~indent ~level:next_level right in
+      Printf.sprintf "%sNode (feature: %d, threshold: %f,\n%s,\n%s)" spaces
+        feature_index threshold left_str right_str
