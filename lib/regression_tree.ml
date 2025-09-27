@@ -7,29 +7,6 @@ type ('feature, 'value) t =
     }
   | Leaf of 'value
 
-type ('x, 'y) dataset = ('x list * 'y) list
-
-let sum (ys : float list) = List.fold_left ( +. ) 0.0 ys
-
-let mean (ys : float list) : float =
-  match ys with [] -> 0.0 | _ -> sum ys /. float_of_int (List.length ys)
-
-let mse (ys : float list) : float =
-  let avg = mean ys in
-  let squared_errors =
-    List.map
-      (fun y ->
-        let diff = y -. avg in
-        diff *. diff)
-      ys
-  in
-  mean squared_errors
-
-(* [(a1, a2, ...), (b1, b2, ...), ...] -> [[a1, b1, ...], [a2, b2, ...], ...] *)
-let rec transpose = function
-  | [] | [] :: _ -> []
-  | rows -> List.map List.hd rows :: transpose (List.map List.tl rows)
-
 let thresholds (xs : float list) : float list =
   let uniquely_sorted_xs = List.sort_uniq compare xs in
   let rec build_thresholds acc lst =
@@ -52,7 +29,8 @@ let calculate_loss_for_split left_ys right_ys =
   let n_right = float_of_int (List.length right_ys) in
   let n = n_left +. n_right in
   if n = 0.0 then infinity
-  else ((n_left *. mse left_ys) +. (n_right *. mse right_ys)) /. n
+  else
+    ((n_left *. Common.svar left_ys) +. (n_right *. Common.svar right_ys)) /. n
 
 let find_best_split_of_feature (xs : float list) (ys : float list) =
   let possible_thresholds = thresholds xs in
@@ -73,7 +51,7 @@ let find_best_split_of_feature (xs : float list) (ys : float list) =
     Some best
 
 let find_best_split (features : float list list) (ys : float list) =
-  let xs_by_feature = transpose features in
+  let xs_by_feature = Common.transpose features in
   let best_splits_by_feature =
     List.map (fun xs -> find_best_split_of_feature xs ys) xs_by_feature
   in
@@ -91,14 +69,14 @@ let find_best_split (features : float list list) (ys : float list) =
   in
   Some best
 
-let fit ?(max_depth : int = max_int) (data : ('x, 'y) dataset) =
+let fit ?(max_depth = max_int) (data : ('x, 'y) Common.dataset) =
   let rec aux max_depth data =
     if List.length data <= 1 || max_depth <= 0 then
-      Leaf (mean (List.map snd data))
+      Leaf (Common.mean (List.map snd data))
     else
       let features, ys = List.split data in
       match find_best_split features ys with
-      | None -> Leaf (mean ys)
+      | None -> Leaf (Common.mean ys)
       | Some (best_feature, best_threshold, _) ->
           let left_data, right_data =
             List.partition
@@ -114,6 +92,16 @@ let fit ?(max_depth : int = max_int) (data : ('x, 'y) dataset) =
             }
   in
   aux max_depth data
+
+let predict (tree : (float, float) t) (inputs : float list) : float =
+  let rec aux node =
+    match node with
+    | Leaf value -> value
+    | Node { feature_index; threshold; left; right } ->
+        if List.nth inputs feature_index <= threshold then aux left
+        else aux right
+  in
+  aux tree
 
 let rec to_string ?(indent = 0) ?(level = 0) (tree : (float, float) t) =
   let spaces = if indent > 0 then String.make (level * indent) ' ' else "" in

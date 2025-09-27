@@ -1,2 +1,3 @@
 (library
- (name regression_tree))
+ (name statlearning)
+ (modules common regression_tree gradient_boosting_regressor))

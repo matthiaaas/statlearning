@@ -1,3 +1,7 @@
 (executable
  (name main)
- (libraries regression_tree))
+ (libraries statlearning))
+
+(executable
+ (name boosting)
+ (libraries statlearning))
