@@ -69,7 +69,7 @@ let find_best_split (features : float list list) (ys : float list) =
   in
   Some best
 
-let fit ?(max_depth = max_int) (data : ('x, 'y) Common.dataset) =
+let fit ?(max_depth = max_int) (data : ('x, 'y) Dataset.single) =
   let rec aux max_depth data =
     if List.length data <= 1 || max_depth <= 0 then
       Leaf (Common.mean (List.map snd data))

@@ -1,5 +1,3 @@
-type ('x, 'y) dataset = ('x list * 'y) list
-
 let sum = List.fold_left ( +. ) 0.0
 
 let mean (ys : float list) : float =
@@ -9,7 +7,7 @@ let mean (ys : float list) : float =
 let residuals (targets : float list) (ys : float list) : float list =
   List.map2 ( -. ) targets ys
 
-let mse (ys : float list) (targets : float list) : float =
+let mse (targets : float list) (ys : float list) : float =
   assert (List.length ys = List.length targets);
   let n = float_of_int (List.length targets) in
   match ys with

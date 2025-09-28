@@ -1,3 +1,4 @@
 (library
  (name statlearning)
- (modules common regression_tree gradient_boosting_regressor))
+ (libraries csv)
+ (modules common dataset regression_tree gradient_boosting_regressor))

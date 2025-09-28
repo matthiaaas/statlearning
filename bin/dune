@@ -1,7 +1,7 @@
 (executable
- (name main)
+ (name regtree)
  (libraries statlearning))
 
 (executable
  (name boosting)
- (libraries statlearning))
+ (libraries statlearning csv))
