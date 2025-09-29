@@ -1,11 +1,7 @@
-open Csv
 open Statlearning
 
 let load_csv =
-  let ic = open_in "data/Auto.csv" in
-  let csv_ic = Csv.of_channel ic in
-  let csv = Csv.input_all csv_ic in
-  close_in csv_ic;
+  let csv = Csv.load "data/Auto.csv" in
   match csv with _ :: rows -> rows | [] -> []
 
 let load_dataset =

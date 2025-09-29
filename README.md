@@ -36,11 +36,7 @@ let data : (float, float) Dataset.single = [ ([ 1.0; 2.0 ], 1.0); ... ] in
 ```
 
 ```ocaml
-open Csv
-
-let load_csv = ...
-
 let load_dataset =
-  let csv = load_csv in
+  let csv = Csv.load "data/Auto.csv" in
   Dataset.single_of_csv [ 4 ] 5 csv
 ```
