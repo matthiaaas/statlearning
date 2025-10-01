@@ -1,4 +1,48 @@
 (library
  (name statlearning)
- (libraries csv)
- (modules common dataset regression_tree gradient_boosting_regressor))
+ (libraries csv ctypes ctypes.foreign)
+ (ctypes
+  (external_library_name libmps)
+  (build_flags_resolver
+   ; Change the -I to point to the directory containing your header files,
+   ; which you need for the ctypes struct definitions
+   (vendored
+    (c_flags :standard -Wall -Werror -Ilibmps)
+    (c_library_flags
+     :standard
+     -framework
+     Foundation
+     -framework
+     Metal
+     -framework
+     MetalPerformanceShaders)))
+  (headers
+   (include "mps.h"))
+  (type_description
+   (instance Types)
+   (functor Type_description))
+  (function_description
+   ; Set this to sequential if the library is not thread-safe
+   (concurrency unlocked)
+   (instance Functions)
+   (functor Function_description))
+  (generated_types Types_generated)
+  (generated_entry_point C))
+ (foreign_archives mps))
+
+(include_subdirs unqualified)
+
+(data_only_dirs libmps)
+
+(rule
+ (deps
+  (source_tree libmps))
+ (targets libmps.a dllmps.so)
+ (action
+  (no-infer
+   (progn
+    (chdir
+     libmps
+     (run make))
+    (copy libmps/libmps.a libmps.a)
+    (copy libmps/libmps.so dllmps.so)))))

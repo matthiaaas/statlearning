@@ -5,3 +5,7 @@
 (executable
  (name boosting)
  (libraries statlearning csv))
+
+(executable
+ (name grad)
+ (libraries statlearning ctypes ctypes.stubs))
