@@ -9,7 +9,7 @@ module Tensor = struct
 end
 
 module Tensor_data = struct
-  type t = { c_ptr : C.Types.Tensor_data_handle.t }
+  type t = { c_ptr : C.Types.Tensor_data_handle.t; shape : int list }
 
   let create (data : float list) (shape : int list) =
     let c_ptr =
@@ -19,11 +19,17 @@ module Tensor_data = struct
         (List.length shape)
     in
     Gc.finalise C.Functions.mps_release_tensor_data c_ptr;
-    { c_ptr }
+    { c_ptr; shape }
 
   let zeroes shape =
     let size = List.fold_left ( * ) 1 shape in
     create (List.init size (fun _ -> 0.)) shape
+
+  let to_list (t : t) : float list =
+    let size = List.fold_left ( * ) 1 t.shape in
+    let float_ptr = C.Functions.mps_tensor_data_to_float_array t.c_ptr in
+    let float_array = Ctypes.CArray.from_ptr float_ptr size in
+    Ctypes.CArray.to_list float_array
 end
 
 let create () =
@@ -43,6 +49,11 @@ let placeholder t (shape : int list) =
 
 let add t a b =
   let c_ptr = C.Functions.mps_graph_attach_addition t.c_ptr a b in
+  let tensor = Tensor.of_c_ptr c_ptr in
+  tensor
+
+let mul t a b =
+  let c_ptr = C.Functions.mps_graph_attach_multiplication t.c_ptr a b in
   let tensor = Tensor.of_c_ptr c_ptr in
   tensor
 

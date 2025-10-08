@@ -73,6 +73,15 @@ TensorHandle mps_graph_attach_addition_c(GraphHandle graph_handle, TensorHandle 
     return handle;
 }
 
+TensorHandle mps_graph_attach_multiplication_c(GraphHandle graph_handle, TensorHandle a, TensorHandle b) {
+    MPSGraphTensor* result_tensor = [graph_handle->graph multiplicationWithPrimaryTensor:a->tensor
+                                                                        secondaryTensor:b->tensor
+                                                                                   name:nil];
+    struct MPSTensorHandle* handle = malloc(sizeof(*handle));
+    handle->tensor = result_tensor;
+    return handle;
+}
+
 void mps_release_tensor_c(TensorHandle tensor_handle) {
     if (tensor_handle) {
         tensor_handle->tensor = nil;
@@ -91,6 +100,29 @@ TensorDataHandle mps_tensor_data_from_float_array_c(const float* data, const int
     struct MPSTensorDataHandle* handle = malloc(sizeof(*handle));
     handle->data = tensorData;
     return handle;
+}
+
+float* mps_tensor_data_to_float_array_c(TensorDataHandle data_handle) {
+    if (!data_handle || !data_handle->data) {
+        return NULL;
+    }
+    
+    MPSNDArray *ndarray = data_handle->data.mpsndarray;
+    if (!ndarray) {
+        return NULL;
+    }
+
+    NSUInteger numberOfDimensions = ndarray.descriptor.numberOfDimensions;
+    NSUInteger elementCount = 1;
+    for (NSUInteger i = 0; i < numberOfDimensions; i++) {
+        NSUInteger dimensionLength = [ndarray.descriptor lengthOfDimension:i];
+        elementCount *= dimensionLength;
+    }
+
+    float *data = malloc(elementCount * sizeof(float));
+    [ndarray readBytes:data strideBytes:nil];
+    
+    return data;
 }
 
 void mps_release_tensor_data_c(TensorDataHandle data_handle) {
@@ -149,6 +181,19 @@ void mps_graph_run_forward_backward_with_feeds_c(GraphHandle graph, const Tensor
         printMPSGraphTensorData(output_data->data);
     } else {
         NSLog(@"No output data found for the output tensor.");
+    }
+
+    for (MPSGraphTensor* feedTensor in results.allKeys) {
+        if (feeds[feedTensor]) {
+            continue; // Skip feed tensors
+        }
+        MPSGraphTensorData* tensorData = results[feedTensor];
+        if (tensorData) {
+            NSLog(@"Result for tensor %@:", feedTensor);
+            printMPSGraphTensorData(tensorData);
+        } else {
+            NSLog(@"No result data found for tensor %@", feedTensor);
+        }
     }
 
     for (MPSGraphTensor* gradTensor in gradients.allValues) {
