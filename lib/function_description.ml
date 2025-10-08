@@ -20,6 +20,9 @@ module Functions (F : Ctypes.FOREIGN) = struct
       (Types.Graph_handle.t @-> Types.Tensor_handle.t @-> Types.Tensor_handle.t
       @-> returning Types.Tensor_handle.t)
 
+  let mps_release_tensor =
+    foreign "mps_release_tensor_c" (Types.Tensor_handle.t @-> returning void)
+
   let mps_tensor_data_from_float_array =
     foreign "mps_tensor_data_from_float_array_c"
       (ptr float @-> ptr int @-> int @-> returning Types.Tensor_data_handle.t)
@@ -34,6 +37,4 @@ module Functions (F : Ctypes.FOREIGN) = struct
       @-> ptr Types.Tensor_data_handle.t
       @-> int @-> Types.Tensor_handle.t @-> Types.Tensor_data_handle.t
       @-> returning void)
-
-  (* let print_hello_world = foreign "print_hello_world" (void @-> returning void) *)
 end

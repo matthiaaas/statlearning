@@ -73,6 +73,13 @@ TensorHandle mps_graph_attach_addition_c(GraphHandle graph_handle, TensorHandle 
     return handle;
 }
 
+void mps_release_tensor_c(TensorHandle tensor_handle) {
+    if (tensor_handle) {
+        tensor_handle->tensor = nil;
+        free(tensor_handle);
+    }
+}
+
 TensorDataHandle mps_tensor_data_from_float_array_c(const float* data, const int* shape, int rank) {
     NSMutableArray<NSNumber*>* shapeArray = collect_shape_of_rank_from_c(shape, rank);
     

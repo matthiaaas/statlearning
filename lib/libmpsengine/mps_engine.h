@@ -19,6 +19,8 @@ extern "C"
     TensorHandle mps_graph_placeholder_c(GraphHandle graph, const int *shape, int rank);
     TensorHandle mps_graph_attach_addition_c(GraphHandle graph, TensorHandle a, TensorHandle b);
 
+    void mps_release_tensor_c(TensorHandle tensor_handle);
+
     TensorDataHandle mps_tensor_data_from_float_array_c(const float *data, const int *shape, int rank);
     void mps_release_tensor_data_c(TensorDataHandle data);
 
