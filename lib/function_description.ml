@@ -4,62 +4,36 @@ module Types = Types_generated
 module Functions (F : Ctypes.FOREIGN) = struct
   open F
 
-  let mtl_create_system_default_device =
-    foreign "mtl_create_system_default_device_c"
-      (void @-> returning Types.MtlDevice.t)
+  let mps_create_graph =
+    foreign "mps_create_graph_c" (void @-> returning Types.Graph_handle.t)
 
-  let mtl_release_device =
-    foreign "mtl_release_device_c" (Types.MtlDevice.t @-> returning void)
+  let mps_release_graph =
+    foreign "mps_release_graph_c" (Types.Graph_handle.t @-> returning void)
 
-  let mtl_get_device_name =
-    foreign "mtl_get_device_name_c" (Types.MtlDevice.t @-> returning string)
+  let mps_graph_placeholder =
+    foreign "mps_graph_placeholder_c"
+      (Types.Graph_handle.t @-> ptr int @-> int
+      @-> returning Types.Tensor_handle.t)
 
-  let mtl_make_command_queue =
-    foreign "mtl_make_command_queue_c"
-      (Types.MtlDevice.t @-> returning Types.MtlCommandQueue.t)
+  let mps_graph_attach_addition =
+    foreign "mps_graph_attach_addition_c"
+      (Types.Graph_handle.t @-> Types.Tensor_handle.t @-> Types.Tensor_handle.t
+      @-> returning Types.Tensor_handle.t)
 
-  let mtl_make_command_buffer =
-    foreign "mtl_make_command_buffer_c"
-      (Types.MtlCommandQueue.t @-> returning Types.MtlCommandBuffer.t)
+  let mps_tensor_data_from_float_array =
+    foreign "mps_tensor_data_from_float_array_c"
+      (ptr float @-> ptr int @-> int @-> returning Types.Tensor_data_handle.t)
 
-  let mtl_commit_command_buffer =
-    foreign "mtl_commit_command_buffer_c"
-      (Types.MtlCommandBuffer.t @-> returning void)
+  let mps_release_tensor_data =
+    foreign "mps_release_tensor_data_c"
+      (Types.Tensor_data_handle.t @-> returning void)
 
-  let mtl_wait_until_completed =
-    foreign "mtl_wait_until_completed_c"
-      (Types.MtlCommandBuffer.t @-> returning void)
+  let mps_graph_run_forward_backward_with_feeds =
+    foreign "mps_graph_run_forward_backward_with_feeds_c"
+      (Types.Graph_handle.t @-> ptr Types.Tensor_handle.t
+      @-> ptr Types.Tensor_data_handle.t
+      @-> int @-> Types.Tensor_handle.t @-> Types.Tensor_data_handle.t
+      @-> returning void)
 
-  let mtl_make_buffer_with_length =
-    foreign "mtl_make_buffer_with_length_c"
-      (Types.MtlDevice.t @-> ulong @-> returning Types.MtlBuffer.t)
-
-  let mtl_make_buffer_with_bytes =
-    foreign "mtl_make_buffer_with_bytes_c"
-      (Types.MtlDevice.t @-> ptr void @-> ulong @-> returning Types.MtlBuffer.t)
-
-  let mtl_get_buffer_contents =
-    foreign "mtl_get_buffer_contents_c"
-      (Types.MtlBuffer.t @-> ptr void @-> ulong @-> returning void)
-
-  let mps_alloc_matrix_multiplication =
-    foreign "mps_alloc_matrix_multiplication_c"
-      (Types.MtlDevice.t @-> bool @-> bool @-> ulong @-> ulong @-> ulong
-     @-> float @-> float
-      @-> returning Types.MpsMatrixMultiplication.t)
-
-  let mps_encode_matrix_multiplication =
-    foreign "mps_encode_matrix_multiplication_to_command_buffer_c"
-      (Types.MpsMatrixMultiplication.t @-> Types.MtlCommandBuffer.t
-     @-> Types.MpsMatrix.t @-> Types.MpsMatrix.t @-> Types.MpsMatrix.t
-     @-> returning void)
-
-  let mps_create_matrix_descriptor =
-    foreign "mps_create_matrix_descriptor_c"
-      (ulong @-> ulong @-> ulong @-> returning Types.MpsMatrixDescriptor.t)
-
-  let mps_create_matrix =
-    foreign "mps_create_matrix_c"
-      (Types.MtlBuffer.t @-> Types.MpsMatrixDescriptor.t
-      @-> returning Types.MpsMatrix.t)
+  (* let print_hello_world = foreign "print_hello_world" (void @-> returning void) *)
 end

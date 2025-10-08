@@ -2,12 +2,12 @@
  (name statlearning)
  (libraries csv ctypes ctypes.foreign)
  (ctypes
-  (external_library_name libmps)
+  (external_library_name libmpsengine)
   (build_flags_resolver
    ; Change the -I to point to the directory containing your header files,
    ; which you need for the ctypes struct definitions
    (vendored
-    (c_flags :standard -Wall -Werror -Ilibmps)
+    (c_flags :standard -Wall -Werror -Ilibmpsengine)
     (c_library_flags
      :standard
      -framework
@@ -17,7 +17,7 @@
      -framework
      MetalPerformanceShaders)))
   (headers
-   (include "mps.h"))
+   (include "mps_engine.h"))
   (type_description
    (instance Types)
    (functor Type_description))
@@ -28,21 +28,21 @@
    (functor Function_description))
   (generated_types Types_generated)
   (generated_entry_point C))
- (foreign_archives mps))
+ (foreign_archives mpsengine))
 
 (include_subdirs unqualified)
 
-(data_only_dirs libmps)
+(data_only_dirs libmpsengine)
 
 (rule
  (deps
-  (source_tree libmps))
- (targets libmps.a dllmps.so)
+  (source_tree libmpsengine))
+ (targets libmpsengine.a dllmpsengine.so)
  (action
   (no-infer
    (progn
     (chdir
-     libmps
+     libmpsengine
      (run make))
-    (copy libmps/libmps.a libmps.a)
-    (copy libmps/libmps.so dllmps.so)))))
+    (copy libmpsengine/libmpsengine.a libmpsengine.a)
+    (copy libmpsengine/libmpsengine.so dllmpsengine.so)))))

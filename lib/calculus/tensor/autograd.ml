@@ -3,3 +3,5 @@ module Device = struct
 
   let to_string = function Cpu -> "cpu" | Mps -> "mps"
 end
+
+let backward = failwith "Not implemented"

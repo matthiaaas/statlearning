@@ -1,4 +1,4 @@
-open! Ctypes
+(* open! Ctypes
 
 module Device = struct
   type t = { ptr : C.Types.MtlDevice.t; name : string }
@@ -62,4 +62,4 @@ module Buffer = struct
     C.Functions.mtl_get_buffer_contents buffer.ptr dst_ptr
       (Unsigned.ULong.of_int buffer.byte_size);
     Array.init len (fun i -> Bigarray.Array1.get arr i)
-end
+end *)

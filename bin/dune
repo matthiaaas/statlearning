@@ -9,3 +9,7 @@
 (executable
  (name grad)
  (libraries statlearning ctypes ctypes.stubs))
+
+(executable
+ (name run)
+ (libraries statlearning))

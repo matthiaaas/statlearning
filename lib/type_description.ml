@@ -3,68 +3,36 @@ open! Ctypes
 module Types (F : Ctypes.TYPE) = struct
   open F
 
-  module MtlDevice = struct
-    let mtl_device_struct : [ `mtl_device ] structure typ =
-      structure "mtl_device"
+  module Graph_handle = struct
+    type mps_graph_handle
 
-    type t = [ `mtl_device ] structure ptr
+    let mps_graph_handle : mps_graph_handle structure typ =
+      structure "MPSGraphHandle"
 
-    let t : t typ = ptr mtl_device_struct
+    type t = mps_graph_handle structure ptr
+
+    let t : t typ = ptr mps_graph_handle
   end
 
-  module MtlCommandQueue = struct
-    let mtl_command_queue_struct : [ `mtl_command_queue ] structure typ =
-      structure "mtl_command_queue"
+  module Tensor_handle = struct
+    type mps_tensor_handle
 
-    type t = [ `mtl_command_queue ] structure ptr
+    let mps_tensor_handle : mps_tensor_handle structure typ =
+      structure "MPSTensorHandle"
 
-    let t : t typ = ptr mtl_command_queue_struct
+    type t = mps_tensor_handle structure ptr
+
+    let t : t typ = ptr mps_tensor_handle
   end
 
-  module MtlCommandBuffer = struct
-    let mtl_command_buffer_struct : [ `mtl_command_buffer ] structure typ =
-      structure "mtl_command_buffer"
+  module Tensor_data_handle = struct
+    type mps_tensor_data_handle
 
-    type t = [ `mtl_command_buffer ] structure ptr
+    let mps_tensor_data_handle : mps_tensor_data_handle structure typ =
+      structure "MPSTensorDataHandle"
 
-    let t : t typ = ptr mtl_command_buffer_struct
-  end
+    type t = mps_tensor_data_handle structure ptr
 
-  module MtlBuffer = struct
-    let mtl_buffer_struct : [ `mtl_buffer ] structure typ =
-      structure "mtl_buffer"
-
-    type t = [ `mtl_buffer ] structure ptr
-
-    let t : t typ = ptr mtl_buffer_struct
-  end
-
-  module MpsMatrixMultiplication = struct
-    let mps_matrix_multiplication_struct :
-        [ `mps_matrix_multiplication ] structure typ =
-      structure "mps_matrix_multiplication"
-
-    type t = [ `mps_matrix_multiplication ] structure ptr
-
-    let t : t typ = ptr mps_matrix_multiplication_struct
-  end
-
-  module MpsMatrixDescriptor = struct
-    let mps_matrix_descriptor_struct : [ `mps_matrix_descriptor ] structure typ
-        =
-      structure "mps_matrix_descriptor"
-
-    type t = [ `mps_matrix_descriptor ] structure ptr
-
-    let t : t typ = ptr mps_matrix_descriptor_struct
-  end
-
-  module MpsMatrix = struct
-    let mps_matrix_struct : [ `mps_matrix ] structure typ =
-      structure "mps_matrix"
-
-    type t = [ `mps_matrix ] structure ptr
-
-    let t : t typ = ptr mps_matrix_struct
+    let t : t typ = ptr mps_tensor_data_handle
   end
 end
