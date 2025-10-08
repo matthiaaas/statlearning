@@ -41,9 +41,35 @@ let load_dataset =
   Dataset.single_of_csv [ 4 ] 5 csv
 ```
 
-# Apple Hardware Acceleration (Metal Performance Shaders, MPS)
+# Apple Hardware Acceleration with Metal Performance Shaders, MPS
 
 C/Objective-C bindings to Apple [Metal Performance Shaders](https://developer.apple.com/documentation/metalperformanceshaders).
+
+## MPSGraph
+
+C/Objective-C bindings to higher-level [Metal Performance Shaders Graph](https://developer.apple.com/documentation/metalperformanceshadersgraph?language=objc) API. This is used for automatic gradient computation in `Tensor`s.
+
+```ocaml
+let graph = Mps_graph.create () in
+
+let tensor_a = Mps_graph.placeholder graph [ 4 ] in
+let tensor_b = Mps_graph.placeholder graph [ 4 ] in
+let data_a = Mps_graph.Tensor_data.create [ 1.; 2.; 3.; 4. ] [ 4 ] in
+let data_b = Mps_graph.Tensor_data.create [ 10.; 20.; 30.; 40. ] [ 4 ] in
+
+let tensor_result = Mps_graph.add tensor_a tensor_b in
+let data_result = Mps_graph.Tensor_data.zeroes [ 4 ] in
+
+Mps_graph.run_forward_backward_with_feeds graph feeds;
+
+let result = Mps_graph.Tensor_data.to_list data_e in
+List.iter (Printf.printf "%f ") result;
+Printf.printf "\n";
+```
+
+## Metal/MPS Primitives (Legacy)
+
+First iteration of binding directly to lower-level Metal and MPS primitives. **PoC-only**.
 
 ```ocaml
 let device = Mtl.Device.create_system_default in
